@@ -1,7 +1,7 @@
 ---
 title: "Assignment 1"
 author: "202075757"
-date: "October 7 2023"
+date: "October 7th 2023"
 output: html_document
 ---
 
@@ -9,7 +9,7 @@ output: html_document
 # this chunk contains code that sets global options for the entire .Rmd. 
 # we use include=FALSE to suppress it from the top of the document, but it will still appear in the appendix. 
 
-knitr::opts_chunk$set(echo = FALSE) # actually set the global chunk options. 
+knitr::opts_chunk$set(echo = TRUE) # actually set the global chunk options. 
 # we set echo=FALSE to suppress code such that it by default does not appear throughout the document. 
 # note: this is different from .Rmd default
 ```
@@ -21,16 +21,102 @@ My forked version of the assignment template repository can be found at https://
 ### Exercise 2
 
 ```{r ex2}
+#load the package in libraries
+suppressMessages(library(tidyverse))
 
+#select a built-in dataset "billboard"
+data("billboard")
+
+#view the first few rows of the dataset
+head(billboard)
+
+#view the whole dataset. 
+
+view(billboard)
+
+#judgement
+print("The dataset is untidied!")
+
+print("The data set is not tidy. It shows the sales on the billboard in the 47 weeks after it entered into the market. The rank is another variable and it has 47 observations in the 47 weeks. To make each variable has its own column and each contains observation has its own row. I would pivot the columns into a new pair of variables. I choose a built-in dataset called billboard.")
+
+#tidy the dataset using pivot_longer and select
+tidy_billboard <- billboard%>%
+  select(artist, track, date.entered,contains("wk"))%>%
+  pivot_longer(cols = contains("wk"), 
+               names_to = "week", 
+               values_to = "rank")
+
+ #view the first few rows of the tidied dataset.
+#The table shows the tidied billborad, including artist name (artist), date of publish (date.entered), track name (track), number of the week (week) and the rank in the week.
+head(tidy_billboard)
+
+#view the whole dataset. 
+view(tidy_billboard)
+
+print("Now the dataset is tidied!")
+
+print("The work I did to tidy the dataset is to add a new variable called rank and put the observations of that in the 47 weeks in seperate rows, pivot the wider dataset to a longer one. To select the column I wish to pivot into longer format, I used select and contains function, which could also be down by start_with, simply replace contains with starts_with( in the code. Thank you.")
 
 ```
 
 ### Exercise 3
+What I would do in the following codes:try to calculate the mean height based on different sex groups. Use mutate to calculate the squared mean height, and the difference between mean and median to judge skewness.
+
+function used: summarise, filter,group,mutate, ifelse, case_when
+operator used: %>%
 
 ```{r ex3}
+#load the package in library
+library(dplyr)
 
+#load built-in dataset "starwars"
+data("starwars")
+#view datasets
+view(starwars)
+
+#There are some unavailable values in both the column of sex and the column of height. Hence, I cleaned NA in sex group using filter function, only calculating the height of male, female, hermaphroditic and none.
+starwars_filtered <-starwars %>%
+  filter(!is.na(sex))
+
+starwars_statistics <-starwars_filtered %>%
+# group the data based on different sex group: female,male,none and hermaphroditic.There are also some NA observations. 
+  group_by(sex)%>%
+#use summmarise function to calculate and create new data frame,mean and median of heights,based on different groups, female, male, none and hermaphroditic. Those non-available observations have been deducted in the calculation. 
+  summarise(mean_height=mean(height,na.rm =TRUE),
+            median_height=median(height,na.rm=TRUE))
+
+#two transformations based of numeric variable mean and median using mutate function
+starwars_result <-starwars_statistics %>%
+# calculate the square mean and 
+  mutate(squared_meanheight=mean_height^2,
+# make skewness judgement based on the difference between mean and median 
+        skewness=mean_height-median_height,   
+# use ifelse function to ditinguish 3 sknewness situation
+        skewness_result=ifelse(skewness>0,"positively skewned",
+        ifelse(skewness<0,"negatively skewed","zero skewness, symmetric distribution")))
+
+# print the result.The table belows show the genarated results with data transformation. It shows the mean, median, squared mean, difference between median and mean, and skewness based on different sex group. 
+print(starwars_statistics)
+print(starwars_result)
+
+# another method is to use case_when to make 3 situation judgemnts
+starwars_result <-starwars_statistics %>%
+  mutate(squared_meanheight=mean_height^2,
+        skewness=mean_height -median_height)%>%
+  mutate(skewness_result=case_when(
+    skewness>0 ~ "positively skewed",
+    skewness<0 ~ "negatively skewed",
+    skewness==0 ~ "zero skewness, symmetric distribution"))
+
+print("Throught the data transformation, it is possible to observe statistical information such as the mean and median of height in different sex categories using the group and summarise function, which could not be observed directly from the orginal data.The difference of means  also reveal the influence of potential extreme values. By squaring the mean, those effect would be emphasized.Also, those squared mean-height value could magnify the differences, making it easier to distinguish different group(gender) categories. In this sample, the difference in mean height between hermaphroditic and male has been exgagerate from 4.1 to 1453.7.")
+
+print("Moreover,  calculating the difference of median and mean enables readers to observe skewness of each sex category.It shows the difference among individuals by measuring the degree and dirction of assymmetry. A positive skewness shows the distribution is skewed to left,meaning some individual in the group is significantly taller than others in the sample data and vice versa.It is noted that in this case, we have a 0 sknewness in the final generated table, which indicates a symmetric distribution. The reason is beacause there is only one observation in the sex category hermaphroditic. ")
+
+#Above are my answers for MY472 problemset 1, thank you.
 
 ```
+
+
 This document contains the necessary commands and layout to meet the formatting requirements for MY472. You should use the template.Rmd file as the basis for your own answers to the assigned exercises.
 
 ## Formatting requirements
